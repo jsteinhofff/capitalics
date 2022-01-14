@@ -1,0 +1,150 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.2.1/dist/chartjs-plugin-annotation.min.js"></script>
+</head>
+<body>
+    <div id="scenario1.a">
+        <h1>100k credit with 10 year fixed interest rate of 0.69 % and monthly payment of 500. Follow up interest rate 3 %.</h1>
+        <pre></pre>
+        <canvas></canvas>
+    </div>
+    <div id="scenario1.b">
+        <h1>100k credit with 10 year fixed interest rate of 0.69 % and monthly payment of 500. Follow up interest rate 1 %.</h1>
+        <pre></pre>
+        <canvas></canvas>
+    </div>
+    <div id="scenario2.a">
+        <h1>100k credit with 15 year fixed interest rate of 0.89 % and monthly payment of 500. Follow up interest rate 3 %.</h1>
+        <pre></pre>
+        <canvas></canvas>
+    </div>
+    <div id="scenario2.b">
+        <h1>100k credit with 15 year fixed interest rate of 0.89 % and monthly payment of 500. Follow up interest rate 1 %.</h1>
+        <pre></pre>
+        <canvas></canvas>
+    </div>
+    <script type="module">
+        import {At, Credit, Interests, OUT_OF_NOWHERE, RegularTransaction, Savings, Scheduler, Spending, Timer, TimerAction} from "../capitalics.js";
+
+        function szenario(interestRate, fixedInterestYears, followUpInterests, scenarioId) {
+            var credit = new Credit("credit", 100000, interestRate, 500);
+            var savings = new Savings("savings", 100000, 0.0);
+            var income = new RegularTransaction("income", OUT_OF_NOWHERE, savings, [
+                new At(0, 0, 500),
+                new At(5, 0, 800),
+                new At(10, 0, 1000)
+            ]);
+            var spending = new Spending(200000);
+            
+            
+            var actions = new Array();
+            // spend the money
+            actions.push(new TimerAction(0, 1,
+                                        function() {
+                                            savings.value -= spending.value - credit.credit;
+                                        }, true)
+            );
+            // follow-up financing
+            actions.push(new TimerAction(fixedInterestYears, 0,
+                                        function() {
+                                            credit.interests = new Interests(followUpInterests);
+                                        }, true)
+            );
+
+            var transactions = new Array();
+            transactions.push(income);
+            transactions.push(credit.getRateTransaction(savings));
+
+            var accounts = new Array();
+            accounts.push(new Timer(0, 1, credit));
+            accounts.push(savings);
+            
+            var scheduler = new Scheduler(actions, transactions, accounts);
+            var data = scheduler.run(30);
+                
+            const chartData = {
+                datasets: [
+                    {
+                        label: 'Credit',
+                        data: data["credit"],
+                        backgroundColor: "coral",
+                        yAxisID: "y_cumulative"
+                    },
+                    {
+                        label: 'Savings',
+                        data: data["savings"],
+                        backgroundColor: "darkolivegreen",
+                        yAxisID: "y_cumulative"
+                    },
+                    {
+                        label: 'Available Income',
+                        data: data["income"],
+                        backgroundColor: "lawngreen",
+                        yAxisID: "y_single"
+                    },
+                    {
+                        label: 'Credit.rate',
+                        data: data["credit.rate"],
+                        backgroundColor: "red",
+                        yAxisID: "y_single"
+                    },
+                    {
+                        label: 'Credit.interests',
+                        data: data["credit.interests"],
+                        backgroundColor: "orange",
+                        yAxisID: "y_single"
+                    }
+                ]
+            };
+            
+            const config = {
+                type: 'line',
+                data: chartData,
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                tooltipFormat: "YYY/MM"
+                            },
+                        },
+                        y_cumulative: {
+                            beginAtZero: true,
+                            stack: "stack",
+                            stackWeight: 2,
+                            grid: {
+                                borderColor: "blue"
+                            }
+                        },
+                        y_single:  {
+                            stack: "stack",
+                            stackWeight: 1,
+                            offset: true
+                        }
+                    }
+                },
+            };
+
+            var scenarioDiv = document.getElementById(scenarioId);
+            
+            const myChart = new Chart(
+                scenarioDiv.getElementsByTagName("canvas")[0],
+                config
+            );
+
+            scenarioDiv.getElementsByTagName("pre")[0].innerHTML = credit.getSummary();
+        }
+        
+        szenario(0.69, 10, 3, "scenario1.a");
+        szenario(0.69, 10, 1, "scenario1.b");
+        
+        szenario(0.89, 15, 3, "scenario2.a");
+        szenario(0.89, 15, 1, "scenario2.b");
+        
+    </script>
+</body>
+</html>

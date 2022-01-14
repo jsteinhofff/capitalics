@@ -1,0 +1,21 @@
+{
+  "name": "capitalics",
+  "version": "0.1.0",
+  "description": "Setup financial scenarios and see how it turns out for you over time.",
+  "main": "capitalics.js",
+  "license": "MIT",
+  "devDependencies": {
+    "jasmine": "^3.10.0",
+    "jasmine-spec-reporter": "^7.0.0"
+  },
+  "dependencies": {
+    "chart.js": "^3.7.0",
+    "chartjs-adapter-date-fns": "^2.0.0",
+    "chartjs-plugin-annotation": "^1.2.1"
+  },
+  "type": "module",
+  "scripts": {
+    "test": "jasmine"
+  },
+  "author": "Janosch Steinhoff"
+}
