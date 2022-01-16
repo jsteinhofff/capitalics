@@ -2,6 +2,8 @@
 capitalics*
 ===========
 
+![CX](https://github.com/jsteinhofff/capitalics/actions/workflows/cx.yml/badge.svg)
+
 *Capital + Mechanics
 
 Setup financial scenarios and see how it turns out for you over time.
