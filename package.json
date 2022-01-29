@@ -5,6 +5,7 @@
   "main": "capitalics.js",
   "license": "MIT",
   "devDependencies": {
+    "c8": "^7.11.0",
     "jasmine": "^3.10.0",
     "jasmine-spec-reporter": "^7.0.0"
   },
@@ -15,7 +16,8 @@
   },
   "type": "module",
   "scripts": {
-    "test": "jasmine"
+    "test": "jasmine",
+    "coverage": "c8 --reporter lcov jasmine"
   },
   "author": "Janosch Steinhoff"
 }
