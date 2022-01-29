@@ -2,6 +2,9 @@
 capitalics*
 ===========
 
+![CX](https://github.com/jsteinhofff/capitalics/actions/workflows/cx.yml/badge.svg)
+[![Coverage Status](https://coveralls.io/repos/github/jsteinhofff/capitalics/badge.svg?branch=main)](https://coveralls.io/github/jsteinhofff/capitalics?branch=main)
+
 *Capital + Mechanics
 
 Setup financial scenarios and see how it turns out for you over time.
