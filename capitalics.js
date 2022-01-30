@@ -467,6 +467,11 @@ export class Credit extends Account {
 
     deposit(value) {
         this.value -= value;
+
+        if ((this.value <= 0.0) && (this.phase == "credit")) {
+            this.phase = "done";
+            this.value = 0.0;
+        }
     }
     
     recordState(recorder) {
