@@ -69,7 +69,7 @@ export class Scheduler {
     // 3. run all transactions
     // 4. observe/report the resulting state
 
-    constructor(actions, transactions, accounts) {
+    constructor(actions, accounts, transactions) {
         this.actions = actions;
         this.transactions = transactions;
         this.accounts = accounts;

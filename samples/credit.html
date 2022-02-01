@@ -63,7 +63,7 @@
             accounts.push(new Timer(0, 1, credit));
             accounts.push(savings);
             
-            var scheduler = new Scheduler(actions, transactions, accounts);
+            var scheduler = new Scheduler(actions, accounts, transactions);
             var data = scheduler.run(30);
                 
             const chartData = {
