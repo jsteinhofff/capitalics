@@ -64,3 +64,38 @@ describe("Credits", function() {
   });
   
   
+  
+describe("Scheduler", function() {
+    it("works", function() {
+        
+        var interestRate = 1.0;
+        var startValue = 1000;
+        var savings = new Savings("savings", startValue, interestRate);
+        
+        var specialDeposit = 10000;
+        var action = new TimerAction(0, 1,
+            function() {
+                savings.deposit(specialDeposit);
+            }, true);
+        
+        var income = 100;
+        var transaction = new Timer(0, 1, new RegularTransaction("transaction", OUT_OF_NOWHERE, savings, income));
+
+        var scheduler = new Scheduler([action], [savings], [transaction]);
+        var data = scheduler.run(1);
+
+        // 1 year = 12 months
+        expect(data["savings"].length).toBe(12);
+
+        // for each month (12 in this case), scheduler shall run 1. actions, 2. accounts, 3. transactions
+        // 1. month: no action, collect interests, no transaction
+        var interestsFactor =  (1.0 + interestRate / 100.0 / 12);
+        var savingsAfter1Month = startValue * interestsFactor;
+        expect(data["savings"][0]["y"]).toBeCloseTo(savingsAfter1Month);
+
+        // 2. month: specialDeposit, collect interests, add income
+        var savingsAfter2Months = (savingsAfter1Month + specialDeposit) * interestsFactor + income;
+        expect(data["savings"][1]["y"]).toBeCloseTo(savingsAfter2Months);
+
+    });
+});
