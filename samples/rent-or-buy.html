@@ -1,0 +1,152 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.0/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.2.1/dist/chartjs-plugin-annotation.min.js"></script>
+</head>
+<body>
+    <div id="scenario-rent">
+        <h1>rent for 1200</h1>
+        <pre></pre>
+        <canvas></canvas>
+    </div>
+    <div id="scenario-buy">
+        <h1>buy something with 400k credit with 2 % interest rate + 100k savings, 1800 monthly credit rate, 200 monthly costs</h1>
+        <pre></pre>
+        <canvas></canvas>
+    </div>
+    </div>
+    <script type="module">
+        import {monthlyRateCallback, At, Credit, Interests, OUT_OF_NOWHERE, OUT_THE_WINDOW, RegularTransaction, Savings, Scheduler, Spending, Timer, TimerAction} from "../capitalics.js";
+
+        function createSavings() {
+            return new Savings("savings", 100000, 0.1);
+        }
+
+        function createIncome(savings) {
+            return new RegularTransaction("income", OUT_OF_NOWHERE, savings, monthlyRateCallback(2000, 2.0 / 12.0));
+        }
+
+        function setupChart(scenarioId, chartData) {
+            const config = {
+                type: 'line',
+                data: chartData,
+                options: {
+                    scales: {
+                        x: {
+                            type: 'time',
+                            time: {
+                                tooltipFormat: "YYY/MM"
+                            },
+                        },
+                        y_cumulative: {
+                            beginAtZero: true,
+                            stack: "stack",
+                            stackWeight: 2,
+                            grid: {
+                                borderColor: "blue"
+                            }
+                        },
+                        y_single:  {
+                            stack: "stack",
+                            stackWeight: 1,
+                            offset: true
+                        }
+                    }
+                },
+            };
+
+            var scenarioDiv = document.getElementById(scenarioId);
+            
+            const myChart = new Chart(
+                scenarioDiv.getElementsByTagName("canvas")[0],
+                config
+            );
+        }
+
+        function rent(scenarioId) {
+            var savings = createSavings();
+            var income = createIncome(savings);
+            var rent = new RegularTransaction("rent", savings, OUT_THE_WINDOW, monthlyRateCallback(1200, 2.0/12.0));
+            
+            var actions = new Array();
+            var transactions = [income, rent];
+            var accounts = [savings];
+            
+            var scheduler = new Scheduler(actions, accounts, transactions);
+            var data = scheduler.run(30);
+                
+            const chartData = {
+                datasets: [
+                    {
+                        label: 'Savings',
+                        data: data["savings"],
+                        backgroundColor: "darkolivegreen",
+                        yAxisID: "y_cumulative"
+                    },
+                    {
+                        label: 'Available Income',
+                        data: data["income"],
+                        backgroundColor: "lawngreen",
+                        yAxisID: "y_single"
+                    },
+                    {
+                        label: 'Rent',
+                        data: data["rent"],
+                        backgroundColor: "red",
+                        yAxisID: "y_single"
+                    }
+                ]
+            };
+
+            setupChart(scenarioId, chartData);
+        }
+        
+        function buy(scenarioId) {
+            var savings = createSavings();
+            var income = createIncome(savings);
+            var credit = new Credit("credit", 400000, 2.0, 1800);
+            var costs = new RegularTransaction("costs", savings, OUT_THE_WINDOW, monthlyRateCallback(200, 2.0 / 12.0));
+            
+            var actions = [new TimerAction(1, 0, function() { savings.value -= 100000; }, true)];
+            var transactions = [income, costs, credit.getRateTransaction(savings)];
+            var accounts = [savings, new Timer(1, 0, credit)];
+            
+            var scheduler = new Scheduler(actions, accounts, transactions);
+            var data = scheduler.run(30);
+                
+            const chartData = {
+                datasets: [
+                    {
+                        label: 'Savings',
+                        data: data["savings"],
+                        backgroundColor: "darkolivegreen",
+                        yAxisID: "y_cumulative"
+                    },
+                    {
+                        label: 'Available Income',
+                        data: data["income"],
+                        backgroundColor: "lawngreen",
+                        yAxisID: "y_single"
+                    },
+                    {
+                        label: 'Credit',
+                        data: data["credit"],
+                        backgroundColor: "red",
+                        yAxisID: "y_cumulative"
+                    }
+                ]
+            };
+            
+            setupChart(scenarioId, chartData);
+        }
+        
+        rent("scenario-rent");
+        
+        buy("scenario-buy");
+        
+    </script>
+</body>
+</html>

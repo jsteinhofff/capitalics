@@ -1,5 +1,21 @@
 
-import {At, Credit, Interests, OUT_OF_NOWHERE, OUT_THE_WINDOW, RegularTransaction, Savings, Scheduler, Spending, Timer, TimerAction} from "../capitalics.js";
+import {formatMoney, monthlyRateCallback, At, Credit, Interests, OUT_OF_NOWHERE, OUT_THE_WINDOW, RegularTransaction, Savings, Scheduler, Spending, Timer, TimerAction} from "../capitalics.js";
+
+describe("small stuff", function() {
+    it("formatMoney", function() {
+        var value = formatMoney(123.45678);
+        expect(value).toBe("123.46");
+    });
+
+    it("monthlyRateCallback", function() {
+        var callback = monthlyRateCallback(1000, 1.0);
+        var valueAfterOneMonth = callback(1);
+        expect(valueAfterOneMonth).toBe(1000 + 1000 * 0.01);
+
+        var valueAfterTwoMonths = callback(2);
+        expect(valueAfterTwoMonths).toBe(valueAfterOneMonth + valueAfterOneMonth * 0.01)
+    });
+});
 
 describe("RegularTransaction", function() {
     it("works", function() {

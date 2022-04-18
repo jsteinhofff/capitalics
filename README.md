@@ -15,6 +15,11 @@ Setup financial scenarios and see how it turns out for you over time.
 
 > Beware of fundamental missunderstandings of financial products, one-off errors, rounding errors and anything else which can go wrong.
 
+To run the examples in /samples they need to be opened through a webserver. In case you have pyton this is very easy with
+
+```
+python -m http.server
+```
 
 Introduction
 ------------
@@ -23,3 +28,13 @@ TBD
 
 * minimal exapmle of a savings account with some income, print out summary
 * visualization with chart.js
+
+
+Contribution
+------------
+
+Running code coverage:
+```
+npm run coverage
+```
+

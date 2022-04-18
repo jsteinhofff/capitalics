@@ -1,19 +1,29 @@
 ﻿
 
 // all money values monthly , netto
-// all interest rates yearly in percent
-
-
-function interestYearlyToMontly(interestRate) {
-    return interestRate / 12.0;
-}
+// all interest rates yearly in percent, except when explicitly otherwise
 
 
 /**
  * Format value as amount of money, i.e render it with 2 decimals. 
  */
-function money(value) {
+export function formatMoney(value) {
     return value.toFixed(2);
+}
+
+
+/**
+ * Create a callback function which expects to get the elapsed months
+ * and from that calculates the current value by applying the monthlyRate (in %)
+ * to it.
+ * Eg. when calling this with initialValue 1000 and giving a monthlyRate of 1 %
+ * then the callback when called with months=1 will return
+ * 1000 * 1 %/month * 1 month = 1010 .
+ */
+export function monthlyRateCallback(initialValue, monthlyRate) {
+    return function(months) {
+        return initialValue * Math.pow(1.0 + monthlyRate / 100.0, months);
+    };
 }
 
 
@@ -145,10 +155,10 @@ export class RegularTransaction extends FinancialEntity {
         this.name = name;
         this.from = from;
         this.to = to;
+        this.monthCounter = 0;
         
         if (value instanceof Array) {
             this.mode = "sequence";
-            this.monthCounter = 0;
             this.ats = value;
             this.value = null;
             // Todo: verify this.ats actually contains At instances with values
@@ -175,7 +185,7 @@ export class RegularTransaction extends FinancialEntity {
                 }
             }
         } else if (this.mode == "callback") {
-            this.value = this.callback();
+            this.value = this.callback(this.monthCounter);
         }
         
         this.monthCounter++;
@@ -228,8 +238,8 @@ export class Savings extends Account {
     }
     
     getSummary() {
-        return "Interests: " + money(this.accumulatedInterests) + "\n" +
-               "Min Value: " + money(this.minValue);
+        return "Interests: " + formatMoney(this.accumulatedInterests) + "\n" +
+               "Min Value: " + formatMoney(this.minValue);
     }
 }
 
@@ -496,13 +506,13 @@ export class Credit extends Account {
     }
 
     getDescription() {
-        return "Credit: " + money(this.credit) + "\n" +
+        return "Credit: " + formatMoney(this.credit) + "\n" +
                 "Interest rate: " + this.interests.ratePerYear + " %/a\n" +
-                "Payment: " + money(this.payment);
+                "Payment: " + formatMoney(this.payment);
     }
     
     getSummary() {
-        return "Cost: " + money(this.getCost());
+        return "Cost: " + formatMoney(this.getCost());
     }
 
     getCost() {
@@ -617,16 +627,16 @@ export class HouseSavings extends Account {
     }
 
     getDescription() {
-        return "Total sum: " + money(this.totalSum) + "\n" +
+        return "Total sum: " + formatMoney(this.totalSum) + "\n" +
                 "Savings interest rate: " + this.ownInterests.ratePerYear + " %/a\n" +
                 "Credit interest rate: " + this.creditInterests.ratePerYear + " %/a\n" +
-                "Payment: " + money(this.payment);
+                "Payment: " + formatMoney(this.payment);
     }
     
     getSummary() {
-        return "Saving interests: " + money(this.accumulatedSavingInterests) + "\n" +
-               "Credit interests: " + money(this.accumulatedCreditInterests) + "\n" +
-               "Cost: " + money(this.getCost());
+        return "Saving interests: " + formatMoney(this.accumulatedSavingInterests) + "\n" +
+               "Credit interests: " + formatMoney(this.accumulatedCreditInterests) + "\n" +
+               "Cost: " + formatMoney(this.getCost());
     }
 
     getCost() {
